@@ -1,73 +1,70 @@
 const express = require("express");
+const mongoose = require("mongoose");
 const app = express();
 app.use(express.json());
 
-const books = [
-    {
-      "id": 1,
-      "title": "1984",
-      "author": "George Orwell"
-    },
-    {
-      "id": 2,
-      "title": "To Kill a Mockingbird",
-      "author": "Harper Lee"
-    },
-    {
-      "id": 3,
-      "title": "Pride and Prejudice",
-      "author": "Jane Austen"
-    },
-    {
-      "id": 4,
-      "title": "The Girl with the Dragon Tattoo",
-      "author": "Stieg Larsson"
-    },
-    {
-      "id": 5,
-      "title": "Gone Girl",
-      "author": "Gillian Flynn"
-    },
-    {
-      "id": 6,
-      "title": "The Name of the Wind",
-      "author": "Patrick Rothfuss"
-    }
-];
+const mongourl = "mongodb+srv://shailesh:d2Ps0UQEnEcmUUkM@cluster0.b5xkmr9.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+
+mongoose.connect(mongourl, { useNewUrlParser: true, useUnifiedTopology: true })
+    .then(() => console.log('MongoDB connected...'))
+    .catch(err => console.log(err));
+
+const bookSchema = new mongoose.Schema({
+    title: String,
+    author: String
+});
+
+const Book = mongoose.model('Book', bookSchema);
 
 // to get all the books 
-app.get("/books", (req, res) => {
-    res.json(books);
-})
-
-// to get some specific books based on their id no.
-app.get("/books/:id", (req, res) => {
-    const bookID = req.params.id - 1;
-    const book = books[bookID];
-    if(book)
-        res.json(book);
-    else 
-        res.status(404).send("book not found");
-})
-
-// to add some books
-app.post("/books/addbook", (req, res) => {
-    const newBook = req.body;
-    newBook.id = books[books.length - 1].id + 1;
-    books.push(newBook);
-    res.status(201).send("new book added");
-})
-
-// to delete any book from the books
-app.delete("/books/deletebook/:id", (req, res) => {
-    const bookID = parseInt(req.params.id);
-    const bookIndex = books.findIndex(books => books.id === bookID);
-    if (bookIndex != -1) {
-        books.splice(bookIndex, 1);
-        res.send(`Book with ID: ${bookID} has been removed.`);
-    } else {
-        res.status(404).send("No such book found in the directory");
+app.get("/books", async (req, res) => {
+    try {
+        const books = await Book.find();
+        res.json(books);
+    } catch (err) {
+        res.status(500).send(err.message);
     }
 });
 
-app.listen(8080);
+// to get a specific book based on their id
+app.get("/books/:id", async (req, res) => {
+    try {
+        const book = await Book.findById(req.params.id);
+        if (book) {
+            res.json(book);
+        } else {
+            res.status(404).send("Book not found");
+        }
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
+// to add a new book
+app.post("/books/addbook", async (req, res) => {
+    try {
+        const newBook = new Book(req.body);
+        await newBook.save();
+        res.status(201).send("New book added");
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
+// to delete a book
+app.delete("/books/deletebook/:id", async (req, res) => {
+    try {
+        const book = await Book.findByIdAndDelete(req.params.id);
+        if (book) {
+            res.send(`Book with ID: ${req.params.id} has been removed.`);
+        } else {
+            res.status(404).send("No such book found in the directory");
+        }
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
+app.listen(8080, () => {
+    console.log("Server is running on port 8080");
+});
