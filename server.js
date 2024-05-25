@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const app = express();
 app.use(express.json());
 
-const mongourl = "mongodb+srv://shailesh:d2Ps0UQEnEcmUUkM@cluster0.b5xkmr9.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+const mongourl = "mongodb+srv://shailesh:d2Ps0UQEnEcmUUkM@cluster0.b5xkmr9.mongodb.net/books?retryWrites=true&w=majority&appName=Cluster0";
 
 mongoose.connect(mongourl, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => console.log('MongoDB connected...'))

@@ -19,7 +19,8 @@ const book = mongoose.model('Book', bookSchema);
 
 const initDb = async () => {
   try {
-    await book.insertMany(books);
+    await book.deleteMany({});
+    await book.insertMany(books.books);
   }
   catch(err) {
     console.log(err);
