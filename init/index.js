@@ -21,6 +21,7 @@ const initDb = async () => {
   try {
     await book.deleteMany({});
     await book.insertMany(books.books);
+    console.log("DOne")
   }
   catch(err) {
     console.log(err);
